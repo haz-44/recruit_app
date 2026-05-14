@@ -114,7 +114,7 @@ def submit():
     # ✅ Consent must be checked (server-side)
     # Checkbox sends "on" when checked, nothing when not checked
     if not request.form.get("consent"):
-        flash("⚠️ يجب الموافقة على استخدام البيانات لغرض التوظيف قبل الإرسال.")
+        flash("Error !! , you have to approve.⚠️")
         return render_template("index.html", form_data=form_data)
 
     # ✅ Required fields
@@ -125,7 +125,7 @@ def submit():
     ]
     for field in required_fields:
         if not form_data.get(field):
-            flash("⚠️ يرجى تعبئة جميع الحقول المطلوبة.")
+            flash("Please fill all requaired feilds. ⚠️")
             return render_template("index.html", form_data=form_data)
 
     # ✅ Normalize & validate phone, and store normalized value
