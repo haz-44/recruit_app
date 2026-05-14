@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>نموذج طلب وظيفة / Job Application Form</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background-color: #ffffff;
+      color: #000;
+      padding: 30px;
+    }
+    h1 {
+      color: #003366;
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    .subtitle {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+    .label-en {
+      font-size: 14px;
+      color: #666;
+      display: block;
+      margin-top: -5px;
+      margin-bottom: 5px;
+    }
+    .req { color: red; }
+  </style>
+</head>
+
+<body>
+  <div class="container shadow-lg p-4 rounded-3 bg-white" style="max-width: 900px;">
+    <h1>نموذج طلب وظيفة / Job Application Form</h1>
+    <p class="subtitle">
+      يرجى تعبئة النموذج أدناه بدقة بالمعلومات الصحيحة الخاصة بك.<br>
+      <span class="label-en">Please fill in the form below accurately with your correct information.</span>
+    </p>
+
+    <!-- ✅ Flash messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-warning text-center">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/submit" novalidate>
+
+      <!-- الاسم الأول واسم العائلة -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-primary">الاسم الأول <span class="req">*</span></label>
+          <span class="label-en">First Name</span>
+          <input type="text" class="form-control" name="first_name"
+                 value="{{ form_data.get('first_name','') }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-primary">اسم العائلة <span class="req">*</span></label>
+          <span class="label-en">Last Name</span>
+          <input type="text" class="form-control" name="last_name"
+                 value="{{ form_data.get('last_name','') }}" required>
+        </div>
+      </div>
+
+      <!-- الجنس والجنسية -->
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-primary">الجنس <span class="req">*</span></label>
+          <span class="label-en">Gender</span>
+          <select class="form-select" name="gender" required>
+            <option value="">اختر / Select</option>
+            <option value="male" {% if form_data.get('gender') == 'male' %}selected{% endif %}>ذكر / Male</option>
+            <option value="female" {% if form_data.get('gender') == 'female' %}selected{% endif %}>أنثى / Female</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-primary">الجنسية <span class="req">*</span></label>
+          <span class="label-en">Nationality</span>
+          <select class="form-select" id="nationality" name="nationality" onchange="toggleNationalityField()" required>
+            <option value="">اختر / Select</option>
+            <option value="saudi" {% if form_data.get('nationality') == 'saudi' %}selected{% endif %}>سعودي / Saudi</option>
+            <option value="non_saudi" {% if form_data.get('nationality') == 'non_saudi' %}selected{% endif %}>غير سعودي / Non-Saudi</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- حقل الجنسية عند اختيار غير سعودي -->
+      <div id="otherNationalityField"
+           class="mt-3 {% if form_data.get('nationality') != 'non_saudi' %}d-none{% endif %}">
+        <label class="form-label fw-bold text-primary">يرجى تحديد الجنسية</label>
+        <span class="label-en">Specify Nationality</span>
+        <input type="text" class="form-control" name="other_nationality" id="other_nationality"
+               value="{{ form_data.get('other_nationality','') }}"
+               placeholder="مثال: بحريني / Bahraini">
+      </div>
+
+      <!-- تاريخ الميلاد -->
+      <div class="mt-3">
+        <label class="form-label fw-bold text-primary">تاريخ الميلاد</label>
+        <span class="label-en">Date of Birth</span>
+        <input type="date" class="form-control" name="dob" value="{{ form_data.get('dob','') }}">
+      </div>
+
+      <!-- المنطقة / المدينة / الحي -->
+      <div class="row g-3 mt-1">
+        <div class="col-md-4">
+          <label class="form-label fw-bold text-primary">المنطقة</label>
+          <span class="label-en">Region</span>
+          <select class="form-select" name="region">
+            <option value="">اختر / Select</option>
+            {% for region in [
+              "الرياض / Riyadh","مكة المكرمة / Makkah","المدينة المنورة / Madinah","القصيم / Qassim",
+              "المنطقة الشرقية / Eastern Province","عسير / Asir","تبوك / Tabuk","حائل / Hail",
+              "الحدود الشمالية / Northern Borders","جازان / Jazan","نجران / Najran",
+              "الباحة / Al Baha","الجوف / Al Jouf"
+            ] %}
+              <option value="{{ region }}" {% if form_data.get('region') == region %}selected{% endif %}>
+                {{ region }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold text-primary">المدينة</label>
+          <span class="label-en">City</span>
+          <input type="text" class="form-control" name="city"
+                 value="{{ form_data.get('city','') }}"
+                 placeholder="مثال: الخبر / Khobar">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold text-primary">الحي</label>
+          <span class="label-en">District</span>
+          <input type="text" class="form-control" name="district"
+                 value="{{ form_data.get('district','') }}"
+                 placeholder="مثال: العليا / Olaya">
+        </div>
+      </div>
+
+      <!-- المؤهل الدراسي -->
+      <div class="mt-3">
+        <label class="form-label fw-bold text-primary">المؤهل الدراسي <span class="req">*</span></label>
+        <span class="label-en">Education Level</span>
+        <select class="form-select" name="education_level" required>
+          <option value="">اختر / Select</option>
+          {% for level in ["ثانوي / High School","دبلوم / Diploma","بكالوريوس / Bachelor","ماجستير / Master","دكتوراه / PhD"] %}
+            <option value="{{ level }}" {% if form_data.get('education_level') == level %}selected{% endif %}>
+              {{ level }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- التخصص -->
+      <div class="mt-3">
+        <label class="form-label fw-bold text-primary">التخصص</label>
+        <span class="label-en">Major</span>
+        <input type="text" class="form-control" name="major"
+               value="{{ form_data.get('major','') }}"
+               placeholder="مثال: إدارة أعمال / Business Administration">
+      </div>
+
+      <!-- الحالة الوظيفية الحالية -->
+      <div class="mt-3">
+        <label class="form-label fw-bold text-primary">الحالة الوظيفية الحالية <span class="req">*</span></label>
+        <span class="label-en">Current Employment Status</span>
+        <select class="form-select" name="employment_status" required>
+          <option value="">اختر / Select</option>
+          <option value="employed" {% if form_data.get('employment_status') == 'employed' %}selected{% endif %}>موظف / Employed</option>
+          <option value="unemployed" {% if form_data.get('employment_status') == 'unemployed' %}selected{% endif %}>غير موظف / Unemployed</option>
+          <option value="student" {% if form_data.get('employment_status') == 'student' %}selected{% endif %}>طالب / Student</option>
+          <option value="freelancer" {% if form_data.get('employment_status') == 'freelancer' %}selected{% endif %}>عمل حر / Freelancer</option>
+        </select>
+      </div>
+
+      <!-- البريد ورقم الجوال -->
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-primary">البريد الإلكتروني <span class="req">*</span></label>
+          <span class="label-en">Email</span>
+          <input type="email" class="form-control" name="email"
+                 value="{{ form_data.get('email','') }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold text-primary">
+            رقم الجوال <span class="req">*</span>
+            </label>
+            <span class="label-en">Mobile Number</span>
+            <input
+                type="tel"
+                class="form-control"
+                name="phone"
+                value="{{ form_data.get('phone','') }}"
+                placeholder="05XXXXXXXX"
+                pattern="^05\d{8}$"
+                maxlength="10"
+                inputmode="numeric"
+                required
+              >
+            </div>
+      </div>
+
+      <!-- نبذة -->
+      <div class="mt-3">
+        <label class="form-label fw-bold text-primary">نبذة قصيرة عنك <span class="req">*</span></label>
+        <span class="label-en">Short Summary</span>
+        <textarea class="form-control" name="summary" rows="4" required>{{ form_data.get('summary','') }}</textarea>
+      </div>
+
+      <!-- الموافقة -->
+      <div class="form-check mt-3">
+        <input class="form-check-input" type="checkbox" name="consent" id="consentCheck" required
+               {% if form_data.get('consent') %}checked{% endif %}>
+        <label class="form-check-label" for="consentCheck">
+          أوافق على استخدام بياناتي لغرض التوظيف فقط /
+          I consent to the use of my data for recruitment purposes.
+        </label>
+      </div>
+
+      <!-- زر الإرسال -->
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary px-5 py-2 fs-5">
+          إرسال الطلب / Submit Application
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    function toggleNationalityField() {
+      const nationalitySelect = document.getElementById("nationality");
+      const otherField = document.getElementById("otherNationalityField");
+      const otherNat = document.getElementById("other_nationality");
+
+      if (nationalitySelect.value === "non_saudi") {
+        otherField.classList.remove("d-none");
+      } else {
+        otherField.classList.add("d-none");
+        if (otherNat) otherNat.value = "";
+      }
+    }
+  </script>
+</body>
+</html>
