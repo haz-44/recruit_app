@@ -133,7 +133,7 @@ def submit():
         normalized_phone = normalize_sa_mobile(form_data.get("phone"))
         form_data["phone"] = normalized_phone  # keep it in form_data for re-render
     except ValueError:
-        flash("⚠️ رقم الجوال غير صحيح. الصيغة المقبولة مثل: 05XXXXXXXX أو 9665XXXXXXXX وسيتم حفظه كـ 9665XXXXXXXX.")
+        flash("⚠️ Please enter your mobile number : 05XXXXXXXX.")
         return render_template("index.html", form_data=form_data)
 
     email = form_data.get("email").lower()
@@ -153,7 +153,7 @@ def submit():
             (email, normalized_phone),
         )
         if c.fetchone():
-            flash("⚠️ هذا البريد الإلكتروني أو رقم الجوال مسجل مسبقًا.")
+            flash("⚠️ Mobile number or Email already registered.")
             return render_template("index.html", form_data=form_data)
 
     # ✅ Registration date/time

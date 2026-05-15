@@ -78,8 +78,8 @@
           <label class="form-label fw-bold text-primary">Gender <span class="req">*</span></label>
           <select class="form-select" name="gender" required>
             <option value="">Select</option>
-            <option value="male" {% if form_data.get('gender') == 'male' %}selected{% endif %}>ذكر / Male</option>
-            <option value="female" {% if form_data.get('gender') == 'female' %}selected{% endif %}>أنثى / Female</option>
+            <option value="male" {% if form_data.get('gender') == 'male' %}selected{% endif %}>Male</option>
+            <option value="female" {% if form_data.get('gender') == 'female' %}selected{% endif %}>Female</option>
           </select>
         </div>
 
@@ -87,8 +87,8 @@
           <label class="form-label fw-bold text-primary">Nationality <span class="req">*</span></label>
           <select class="form-select" id="nationality" name="nationality" onchange="toggleNationalityField()" required>
             <option value="">Select</option>
-            <option value="saudi" {% if form_data.get('nationality') == 'saudi' %}selected{% endif %}>سعودي / Saudi</option>
-            <option value="non_saudi" {% if form_data.get('nationality') == 'non_saudi' %}selected{% endif %}>غير سعودي / Non-Saudi</option>
+            <option value="saudi" {% if form_data.get('nationality') == 'saudi' %}selected{% endif %}>Saudi</option>
+            <option value="non_saudi" {% if form_data.get('nationality') == 'non_saudi' %}selected{% endif %}>Non-Saudi</option>
           </select>
         </div>
       </div>
@@ -115,11 +115,8 @@
           <select class="form-select" name="region">
             <option value="">Select</option>
             {% for region in [
-              "الرياض / Riyadh","مكة المكرمة / Makkah","المدينة المنورة / Madinah","القصيم / Qassim",
-              "المنطقة الشرقية / Eastern Province","عسير / Asir","تبوك / Tabuk","حائل / Hail",
-              "الحدود الشمالية / Northern Borders","جازان / Jazan","نجران / Najran",
-              "الباحة / Al Baha","الجوف / Al Jouf"
-            ] %}
+              "Riyadh","Makkah","Madinah","Qassim","Eastern Province","Asir","Tabuk","Hail",
+              "Northern Borders","Jazan","Najran","Al Baha","Al Jouf"] %}
               <option value="{{ region }}" {% if form_data.get('region') == region %}selected{% endif %}>
                 {{ region }}
               </option>
