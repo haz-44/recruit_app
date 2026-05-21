@@ -12,7 +12,6 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "secret_key_here")
 
 DB_NAME = "applications.db"
 
-# 🔐 مفتاح التصدير (غيّره من متغيرات البيئة في الإنتاج)
 EXPORT_KEY = os.environ.get("RECRUIT_EXPORT_KEY", "hani2025")
 
 
@@ -84,6 +83,8 @@ def init_db():
                 district TEXT,
                 education_level TEXT NOT NULL,
                 major TEXT,
+                english TEXT NOT NULL,
+                arabic TEXT NOT NULL,
                 employment_status TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
                 phone TEXT NOT NULL UNIQUE,
@@ -114,18 +115,18 @@ def submit():
     # ✅ Consent must be checked (server-side)
     # Checkbox sends "on" when checked, nothing when not checked
     if not request.form.get("consent"):
-        flash("Error !! , you have to approve.⚠️")
+        flash("You must approve before submitting. ⚠️")
         return render_template("index.html", form_data=form_data)
 
     # ✅ Required fields
     required_fields = [
-        "first_name", "last_name", "gender", "nationality",
-        "education_level", "employment_status",
-        "email", "phone", "summary"
+    "first_name", "last_name", "gender", "nationality",
+    "education_level", "english", "arabic", "employment_status",
+    "email", "phone", "summary"
     ]
     for field in required_fields:
         if not form_data.get(field):
-            flash("Please fill all requaired feilds. ⚠️")
+            flash("Please fill all required fields. ⚠️")
             return render_template("index.html", form_data=form_data)
 
     # ✅ Normalize & validate phone, and store normalized value
@@ -142,8 +143,9 @@ def submit():
     form_data["email"] = email
 
     # If nationality is saudi, clear other_nationality
-    if form_data.get("nationality") != "non_saudi":
-        form_data["other_nationality"] = ""
+    if form_data.get("nationality") == "non_saudi" and not form_data.get("other_nationality"):
+        flash("Please specify your nationality. ⚠️")
+        return render_template("index.html", form_data=form_data)
 
     # ✅ Check duplicates
     with sqlite3.connect(DB_NAME) as conn:
@@ -168,12 +170,13 @@ def submit():
             c.execute(
                 """
                 INSERT INTO applications (
-                    first_name, last_name, gender, nationality, other_nationality,
-                    dob, region, city, district, education_level, major,
-                    employment_status, email, phone, summary, consent,
-                    reg_date, reg_time
+                first_name, last_name, gender, nationality, other_nationality,
+                dob, region, city, district, education_level, major,
+                english, arabic, employment_status, email, phone, summary, consent,
+                reg_date, reg_time
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
                 """,
                 (
                     form_data.get("first_name"),
@@ -187,6 +190,8 @@ def submit():
                     form_data.get("district"),
                     form_data.get("education_level"),
                     form_data.get("major"),
+                    form_data.get("english"),
+                    form_data.get("arabic"),
                     form_data.get("employment_status"),
                     email,
                     normalized_phone,
@@ -199,10 +204,10 @@ def submit():
             conn.commit()
     except sqlite3.IntegrityError:
         # In case of race condition duplicate
-        flash("⚠️ تعذر حفظ الطلب لأن البريد الإلكتروني أو رقم الجوال مسجل مسبقًا.")
+        flash("⚠️ The email address or mobile number is already registered.")
         return render_template("index.html", form_data=form_data)
 
-    flash("✅ تم استلام طلبك بنجاح وحفظ بياناتك.")
+    flash("✅ Your request has been successfully received.")
     return redirect("/")
 
 
@@ -211,7 +216,7 @@ def export_data():
     # ✅ Key protection
     key = request.args.get("key")
     if not key or not hmac.compare_digest(key, EXPORT_KEY):
-        abort(401, description="غير مصرح لك بالدخول")
+        abort(401, description="Unauthorized access")
 
     # ✅ Read DB
     with sqlite3.connect(DB_NAME) as conn:
@@ -221,7 +226,7 @@ def export_data():
             SELECT
                 id, first_name, last_name, gender, nationality, other_nationality,
                 dob, region, city, district, education_level, major,
-                employment_status, email, phone, summary, consent,
+                english, arabic, employment_status, email, phone, summary, consent,
                 reg_date, reg_time
             FROM applications
             ORDER BY id DESC
@@ -246,6 +251,8 @@ def export_data():
         "District",
         "Education Level",
         "Major",
+        "English",
+        "Arabic",
         "Employment Status",
         "Email",
         "Phone (Normalized)",
