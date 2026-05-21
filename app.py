@@ -6,13 +6,17 @@ from flask import Flask, render_template, request, redirect, flash, send_file, a
 import csv
 import io
 import hmac
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "secret_key_here")
+
+app.secret_key = os.environ["FLASK_SECRET_KEY"]
+EXPORT_KEY = os.environ["RECRUIT_EXPORT_KEY"]
 
 DB_NAME = "applications.db"
 
-EXPORT_KEY = os.environ.get("RECRUIT_EXPORT_KEY", "hani2025")
 
 
 # ---------- Helpers ----------
@@ -65,6 +69,23 @@ def now_ksa_naive():
 
 
 # ---------- DB ----------
+def add_missing_columns():
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+
+        c.execute("PRAGMA table_info(applications)")
+        existing_columns = [column[1] for column in c.fetchall()]
+
+        if "english" not in existing_columns:
+            c.execute("ALTER TABLE applications ADD COLUMN english TEXT DEFAULT ''")
+
+        if "arabic" not in existing_columns:
+            c.execute("ALTER TABLE applications ADD COLUMN arabic TEXT DEFAULT ''")
+
+        conn.commit()
+
+
+
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
         c = conn.cursor()
@@ -99,6 +120,8 @@ def init_db():
 
 
 init_db()
+
+add_missing_columns()
 
 
 # ---------- Routes ----------
@@ -146,6 +169,9 @@ def submit():
     if form_data.get("nationality") == "non_saudi" and not form_data.get("other_nationality"):
         flash("Please specify your nationality. ⚠️")
         return render_template("index.html", form_data=form_data)
+    
+    if form_data.get("nationality") != "non_saudi":
+        form_data["other_nationality"] = ""
 
     # ✅ Check duplicates
     with sqlite3.connect(DB_NAME) as conn:
@@ -275,5 +301,7 @@ def export_data():
     )
 
 
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
