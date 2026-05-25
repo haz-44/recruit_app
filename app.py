@@ -2,7 +2,7 @@ import os
 import re
 import sqlite3
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, flash, send_file, abort
+from flask import Flask, render_template, request, redirect, flash, send_file, abort, url_for
 import csv
 import io
 import hmac
@@ -130,6 +130,10 @@ def index():
     return render_template("index.html", form_data={})
 
 
+@app.route("/result")
+def result():
+    return render_template("result.html")
+
 @app.route("/submit", methods=["POST"])
 def submit():
     # Read form values
@@ -232,9 +236,7 @@ def submit():
         # In case of race condition duplicate
         flash("⚠️ The email address or mobile number is already registered.")
         return render_template("index.html", form_data=form_data)
-
-    flash("✅ Your request has been successfully received.")
-    return redirect("/")
+    return redirect(url_for("result"))
 
 
 @app.route("/export")
