@@ -252,10 +252,9 @@ def export_data():
         cursor.execute(
             """
             SELECT
-                id, first_name, last_name, gender, nationality, other_nationality,
+                id, reg_date, reg_time, first_name, last_name, gender, nationality, other_nationality,
                 dob, region, city, district, education_level, major,
-                english, arabic, employment_status, email, phone, summary, consent,
-                reg_date, reg_time
+                english, arabic, employment_status, email, phone, consent
             FROM applications
             ORDER BY id DESC
             """
