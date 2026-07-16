@@ -268,6 +268,8 @@ def export_data():
 
     writer.writerow([
         "ID",
+        "Registration Date",
+        "Registration Time",
         "First Name",
         "Last Name",
         "Gender",
@@ -284,10 +286,7 @@ def export_data():
         "Employment Status",
         "Email",
         "Phone (Normalized)",
-        "Summary",
         "Consent",
-        "Registration Date",
-        "Registration Time",
     ])
 
     writer.writerows(rows)
